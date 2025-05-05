@@ -39,7 +39,12 @@ public class JmRegistry {
                 jmProperties.getGreetingMessage()
         );
 
-        jmDNS.addServiceListener(group, jmDnsEventListener);
-        jmDNS.registerService(serviceDef);
+        try {
+            jmDNS.addServiceListener(group, jmDnsEventListener);
+            jmDNS.registerService(serviceDef);
+        } catch (Exception e) {
+            log.error("Failed to register JmDNS service", e);
+        }
+
     }
 }
