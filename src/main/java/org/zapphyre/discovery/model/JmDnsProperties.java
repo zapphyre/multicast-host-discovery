@@ -8,7 +8,6 @@ import lombok.With;
 @Value
 @Builder
 public class JmDnsProperties {
-    String mineIpAddress;
     String instanceName;
     String greetingMessage;
     String group;
