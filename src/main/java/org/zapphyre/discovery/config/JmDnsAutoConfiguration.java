@@ -8,10 +8,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Import;
-import org.springframework.retry.annotation.EnableRetry;
-import org.springframework.retry.backoff.FixedBackOffPolicy;
-import org.springframework.retry.policy.SimpleRetryPolicy;
-import org.springframework.retry.support.RetryTemplate;
 import org.zapphyre.discovery.mapper.EventSourceMapper;
 import org.zapphyre.discovery.mapper.EventSourceMapperImpl;
 import org.zapphyre.discovery.porperty.JmDnsHostProperties;
@@ -19,35 +15,20 @@ import org.zapphyre.discovery.porperty.JmDnsHostProperties;
 import java.net.*;
 import java.util.Enumeration;
 import java.util.Optional;
+import java.util.function.Predicate;
 
-@EnableRetry
 @EnableAspectJAutoProxy
 @Configuration(proxyBeanMethods = false)
 @Import({JmRegistry.class, JmAutoRegistrar.class})
 @RequiredArgsConstructor
 public class JmDnsAutoConfiguration {
 
-    @Value("${jmDns.mineIpAddress:127.0.0.1}")
+    @Value("${jmDns.mineIpAddress:}")
     private InetAddress mineIpAddress;
 
     @Bean
     public EventSourceMapper eventSourceMapper() {
         return new EventSourceMapperImpl();
-    }
-
-    @Bean
-    public RetryTemplate retryTemplate() {
-        RetryTemplate retryTemplate = new RetryTemplate();
-
-        FixedBackOffPolicy fixedBackOffPolicy = new FixedBackOffPolicy();
-        fixedBackOffPolicy.setBackOffPeriod(2000l);
-        retryTemplate.setBackOffPolicy(fixedBackOffPolicy);
-
-        SimpleRetryPolicy retryPolicy = new SimpleRetryPolicy();
-        retryPolicy.setMaxAttempts(4);
-        retryTemplate.setRetryPolicy(retryPolicy);
-
-        return retryTemplate;
     }
 
     @Bean
@@ -69,7 +50,7 @@ public class JmDnsAutoConfiguration {
                 NetworkInterface ni = interfaces.nextElement();
 
                 // Skip if interface is down, loopback, or virtual
-                if (!ni.isUp() || ni.isLoopback() || ni.isVirtual()) {
+                if (nonPhysicalInterface.test(ni)) {
                     continue;
                 }
 
@@ -96,6 +77,29 @@ public class JmDnsAutoConfiguration {
         }
 
         // Final fallback: Return null or loopback address if nothing else is found
-        return InetAddress.getByName("127.0.0.1");
+        return null;
     }
+
+
+    static Predicate<NetworkInterface> vmware = q -> q.getName().startsWith("vmnet");
+    static Predicate<NetworkInterface> up = q -> {
+        try {
+            return q.isUp();
+        } catch (SocketException e) {
+            return false;
+        }
+    };
+
+    static Predicate<NetworkInterface> loopback = q -> {
+        try {
+            return q.isLoopback();
+        } catch (SocketException e) {
+            return false;
+        }
+    };
+
+    static Predicate<NetworkInterface> virtual = NetworkInterface::isVirtual;
+
+    static Predicate<NetworkInterface> nonPhysicalInterface = vmware.or(up.negate()).or(loopback);
+
 }

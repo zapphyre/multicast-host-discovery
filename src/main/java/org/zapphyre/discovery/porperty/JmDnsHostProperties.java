@@ -1,11 +1,11 @@
 package org.zapphyre.discovery.porperty;
 
 import lombok.Builder;
-import lombok.Value;
+import lombok.Data;
 
 import java.net.InetAddress;
 
-@Value
+@Data
 @Builder
 public class JmDnsHostProperties {
 

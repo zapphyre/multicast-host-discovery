@@ -3,6 +3,7 @@ package org.zapphyre.discovery.config;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.zapphyre.discovery.exception.NoLocalIpException;
 import org.zapphyre.discovery.intf.JmDnsInstanceManager;
 import org.zapphyre.discovery.listener.JmDnsEventListener;
 import org.zapphyre.discovery.mapper.EventSourceMapper;
@@ -22,6 +23,8 @@ public class JmRegistry {
     private final JmDnsHostProperties hostProperties;
 
     public void register(JmDnsProperties jmProperties, JmDnsInstanceManager instanceManager) throws IOException {
+        if (hostProperties.getMineIpAddress() == null) throw new NoLocalIpException("MineIpAddress is null");
+
         JmDNS jmDNS = JmDNS.create(hostProperties.getMineIpAddress());
 
         JmDnsEventListener jmDnsEventListener = new JmDnsEventListener(jmDNS,
