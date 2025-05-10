@@ -32,7 +32,6 @@ public class JmAutoRegistrar {
     void registerEm() {
         Iterator<JmAutoRegistry> iCandid = candidates.iterator();
 
-
         while (iCandid.hasNext()) {
             JmAutoRegistry candidate = iCandid.next();
             try {
