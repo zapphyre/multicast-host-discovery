@@ -6,5 +6,5 @@ public interface JmDnsInstanceManager {
 
     void sourceDiscovered(WebSourceDef def);
 
-    void sourceLost(String name);
+    void sourceLost(WebSourceDef def);
 }

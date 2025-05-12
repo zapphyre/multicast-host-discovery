@@ -8,7 +8,9 @@ import org.zapphyre.discovery.model.WebSourceDef;
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceEvent;
 import javax.jmdns.ServiceListener;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 
 @Slf4j
@@ -19,7 +21,9 @@ public class JmDnsEventListener implements ServiceListener {
     private final EventSourceMapper mapper;
     private final String name;
     private final Consumer<WebSourceDef> addObserver;
-    private final Consumer<String> removeObserver;
+    private final Consumer<WebSourceDef> removeObserver;
+
+    private final Set<WebSourceDef> registeredSources = new HashSet<>();
 
     @Override
     public void serviceAdded(ServiceEvent event) {
@@ -30,7 +34,10 @@ public class JmDnsEventListener implements ServiceListener {
 
     @Override
     public void serviceRemoved(ServiceEvent event) {
-        removeObserver.accept(event.getName());
+        Optional.of(event)
+                .map(mapper::map)
+                .filter(registeredSources::remove)
+                .ifPresent(removeObserver);
     }
 
     @Override
@@ -39,6 +46,7 @@ public class JmDnsEventListener implements ServiceListener {
 
         Optional.of(event)
                 .map(mapper::map)
+                .filter(registeredSources::add)
                 .ifPresent(addObserver);
     }
 }

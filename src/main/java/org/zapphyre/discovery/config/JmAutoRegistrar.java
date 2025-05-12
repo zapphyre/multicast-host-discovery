@@ -25,7 +25,6 @@ public class JmAutoRegistrar {
     private final JmRegistry jmRegistry;
     private final JmDnsHostProperties host;
 
-    private String toLog = "";
     private String toLogPrev = "";
 
     @PostConstruct
@@ -34,6 +33,7 @@ public class JmAutoRegistrar {
 
         while (iCandid.hasNext()) {
             JmAutoRegistry candidate = iCandid.next();
+            String toLog = "";
             try {
                 registerJm(candidate);
                 toLog = "Registered JM registry %s".formatted(candidate.getJmDnsProperties().getInstanceName());
