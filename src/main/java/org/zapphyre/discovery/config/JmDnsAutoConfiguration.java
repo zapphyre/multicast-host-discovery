@@ -3,6 +3,7 @@ package org.zapphyre.discovery.config;
 
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,6 +18,7 @@ import java.util.Enumeration;
 import java.util.Optional;
 import java.util.function.Predicate;
 
+@Slf4j
 @EnableAspectJAutoProxy
 @Configuration(proxyBeanMethods = false)
 @Import({JmRegistry.class, JmAutoRegistrar.class})
@@ -73,7 +75,7 @@ public class JmDnsAutoConfiguration {
             }
 
         } catch (SocketException | UnknownHostException e) {
-            System.err.println("Error finding active IP: " + e.getMessage());
+            log.error("Error finding active IP: {}", e.getMessage());
         }
 
         // Final fallback: Return null or loopback address if nothing else is found
@@ -100,6 +102,6 @@ public class JmDnsAutoConfiguration {
 
     static Predicate<NetworkInterface> virtual = NetworkInterface::isVirtual;
 
-    static Predicate<NetworkInterface> nonPhysicalInterface = vmware.or(up.negate()).or(loopback);
+    static Predicate<NetworkInterface> nonPhysicalInterface = vmware.or(up.negate()).or(loopback).or(virtual);
 
 }
