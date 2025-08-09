@@ -35,7 +35,7 @@ public class JmAutoRegistrar {
             JmAutoRegistry candidate = iCandid.next();
             String toLog = "";
             try {
-                registerJm(candidate);
+                jmRegistry.register(candidate);
                 toLog = "Registered JM registry %s".formatted(candidate.getJmDnsProperties().getInstanceName());
                 iCandid.remove();
             } catch (NoLocalIpException e) {
@@ -54,9 +54,5 @@ public class JmAutoRegistrar {
         if (!candidates.isEmpty())
             Executors.newSingleThreadScheduledExecutor()
                     .schedule(this::registerEm, 4, TimeUnit.SECONDS);
-    }
-
-    public void registerJm(JmAutoRegistry q) throws IOException {
-        jmRegistry.register(q.getJmDnsProperties(), q);
     }
 }

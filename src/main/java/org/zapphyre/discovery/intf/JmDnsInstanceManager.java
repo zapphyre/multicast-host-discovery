@@ -1,5 +1,6 @@
 package org.zapphyre.discovery.intf;
 
+import org.zapphyre.discovery.model.JmDnsProperties;
 import org.zapphyre.discovery.model.WebSourceDef;
 
 public interface JmDnsInstanceManager {
@@ -7,4 +8,6 @@ public interface JmDnsInstanceManager {
     void sourceDiscovered(WebSourceDef def);
 
     void sourceLost(WebSourceDef def);
+
+    JmDnsProperties getJmDnsProperties();
 }

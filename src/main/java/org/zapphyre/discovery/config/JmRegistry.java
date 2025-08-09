@@ -24,18 +24,19 @@ public class JmRegistry implements RegistryController {
     private final JmDnsHostProperties hostProperties;
     private JmDNS jmDNS;
 
-    public void register(JmDnsProperties jmProperties, JmDnsInstanceManager instanceManager) throws IOException {
+    public void register(JmDnsInstanceManager instanceManager) throws IOException {
         if (hostProperties.getMineIpAddress() == null) throw new NoLocalIpException("MineIpAddress is null");
 
         jmDNS = JmDNS.create(hostProperties.getMineIpAddress());
+        JmDnsProperties jmDnsProperties = instanceManager.getJmDnsProperties();
 
         JmDnsEventListener jmDnsEventListener = new JmDnsEventListener(jmDNS,
                 mapper,
-                jmProperties.getInstanceName(),
+                jmDnsProperties.getInstanceName(),
                 instanceManager::sourceDiscovered, instanceManager::sourceLost
         );
 
-        ServiceInfo info = map(jmProperties);
+        ServiceInfo info = map(jmDnsProperties);
         log.info("Registering JmDNS group '{}'. for Ip: {}", info.getType(), hostProperties.getMineIpAddress());
 
         try {
@@ -62,13 +63,13 @@ public class JmRegistry implements RegistryController {
 
     @Override
     public void delist(JmDnsProperties properties) {
-        log.info("Delisting JmDNS group '{}'.", properties.getGroup());
+        log.info("Delisting JmDNS group '{}'.", mapGroup(properties.getGroup()));
         jmDNS.unregisterService(map(properties));
     }
 
     @Override
     public void register(JmDnsProperties properties) throws IOException {
-        log.info("Registering JmDNS group '{}'.", properties.getGroup());
+        log.info("Registering JmDNS group '{}'.", mapGroup(properties.getGroup()));
         jmDNS.registerService(map(properties));
     }
 }

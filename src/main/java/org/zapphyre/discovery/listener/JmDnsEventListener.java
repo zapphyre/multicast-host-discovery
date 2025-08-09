@@ -34,19 +34,33 @@ public class JmDnsEventListener implements ServiceListener {
 
     @Override
     public void serviceRemoved(ServiceEvent event) {
+        log.info("JmDns service instance remove request: " + event.getName());
+
         Optional.of(event)
                 .map(mapper::map)
                 .filter(registeredSources::remove)
-                .ifPresent(removeObserver);
+                .ifPresent(q -> {
+                    removeObserver.accept(q);
+                    log.info("JmDns service instance removed: " + event.getName());
+                });
     }
 
     @Override
     public void serviceResolved(ServiceEvent event) {
-        if (event.getName().equals(name)) return;
+        if (event.getName().equals(name)) {
+            log.warn("skipping serviceResolve of self by name: '{}'", event.getName());
+            return;
+        }
+
+        log.info("JmDns service instance resolved: " + event.getName());
 
         Optional.of(event)
                 .map(mapper::map)
                 .filter(registeredSources::add)
                 .ifPresent(addObserver);
+    }
+
+    public static  <T> T throwUp() {
+        throw new RuntimeException();
     }
 }
