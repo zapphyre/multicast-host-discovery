@@ -9,7 +9,7 @@ import javax.jmdns.ServiceEvent;
 import javax.jmdns.impl.JmDNSImpl;
 import java.io.IOException;
 
-import static org.zapphyre.discovery.listener.JmDnsEventListener.throwUp;
+import static org.zapphyre.function.FunHelper.throwUp;
 
 @Mapper(componentModel = "spring")
 public interface EventSourceMapper {

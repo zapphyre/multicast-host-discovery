@@ -13,6 +13,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import static org.zapphyre.function.FunHelper.*;
+
 @Slf4j
 @RequiredArgsConstructor
 public class JmDnsEventListener implements ServiceListener {
@@ -39,10 +41,8 @@ public class JmDnsEventListener implements ServiceListener {
         Optional.of(event)
                 .map(mapper::map)
                 .filter(registeredSources::remove)
-                .ifPresent(q -> {
-                    removeObserver.accept(q);
-                    log.info("JmDns service instance removed: " + event.getName());
-                });
+                .map(funky(chew(WebSourceDef::getName, logFun("JmDns service instance removed: {}"))))
+                .ifPresent(removeObserver);
     }
 
     @Override
@@ -52,15 +52,10 @@ public class JmDnsEventListener implements ServiceListener {
             return;
         }
 
-        log.info("JmDns service instance resolved: " + event.getName());
-
         Optional.of(event)
                 .map(mapper::map)
                 .filter(registeredSources::add)
+                .map(funky(chew(WebSourceDef::getName, logFun("JmDns service instance resolved: {}"))))
                 .ifPresent(addObserver);
-    }
-
-    public static  <T> T throwUp() {
-        throw new RuntimeException();
     }
 }
