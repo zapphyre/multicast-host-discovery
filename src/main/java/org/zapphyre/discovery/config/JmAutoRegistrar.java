@@ -28,7 +28,7 @@ public class JmAutoRegistrar {
     private String toLogPrev = "";
 
     @PostConstruct
-    void registerEm() {
+    public void registerEm() {
         Iterator<JmAutoRegistry> iCandid = candidates.iterator();
 
         while (iCandid.hasNext()) {
@@ -54,5 +54,9 @@ public class JmAutoRegistrar {
         if (!candidates.isEmpty())
             Executors.newSingleThreadScheduledExecutor()
                     .schedule(this::registerEm, 4, TimeUnit.SECONDS);
+    }
+
+    public boolean addCandidate(JmAutoRegistry candidate) {
+        return candidates.add(candidate);
     }
 }

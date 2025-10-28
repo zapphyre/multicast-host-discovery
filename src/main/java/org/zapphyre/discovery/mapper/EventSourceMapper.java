@@ -11,7 +11,7 @@ import java.io.IOException;
 
 import static org.zapphyre.function.FunHelper.throwUp;
 
-@Mapper(componentModel = "spring")
+@Mapper
 public interface EventSourceMapper {
 
     @Mapping(target = "port", source = "info.port")
