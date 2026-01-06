@@ -1,5 +1,6 @@
 package org.zapphyre.discovery.config;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -23,6 +24,11 @@ public class JmRegistry implements RegistryController {
     private final EventSourceMapper mapper;
     private final JmDnsHostProperties hostProperties;
     private JmDNS jmDNS;
+
+    @PostConstruct
+    void init() throws IOException {
+        jmDNS = JmDNS.create(hostProperties.getMineIpAddress());
+    }
 
     public void register(JmDnsInstanceManager instanceManager) throws IOException {
         if (hostProperties.getMineIpAddress() == null) throw new NoLocalIpException("MineIpAddress is null");
