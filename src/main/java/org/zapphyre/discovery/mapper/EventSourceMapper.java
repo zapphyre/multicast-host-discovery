@@ -1,6 +1,5 @@
 package org.zapphyre.discovery.mapper;
 
-import lombok.extern.slf4j.Slf4j;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -8,8 +7,6 @@ import org.zapphyre.discovery.model.WebSourceDef;
 
 import javax.jmdns.ServiceEvent;
 import javax.jmdns.ServiceInfo;
-
-import java.util.Optional;
 
 import static org.zapphyre.discovery.config.JmRegistry.ADDRESS_JMDNS_PROP;
 

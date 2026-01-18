@@ -8,9 +8,7 @@ import org.zapphyre.discovery.model.WebSourceDef;
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceEvent;
 import javax.jmdns.ServiceListener;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 
 import static org.zapphyre.function.FunHelper.*;
@@ -25,7 +23,9 @@ public class JmDnsEventListener implements ServiceListener {
     private final Consumer<WebSourceDef> addObserver;
     private final Consumer<WebSourceDef> removeObserver;
 
-    private final Set<WebSourceDef> registeredSources = new HashSet<>();
+//    private final Set<WebSourceDef> registeredSources = new HashSet<>();
+
+    private final Map<String, WebSourceDef> hostMap = new HashMap<>();
 
     @Override
     public void serviceAdded(ServiceEvent event) {
@@ -38,26 +38,28 @@ public class JmDnsEventListener implements ServiceListener {
     public void serviceRemoved(ServiceEvent event) {
         log.info("JmDns service instance remove request: " + event.getName());
 
-        WebSourceDef def = mapper.map(event);
-        System.out.println("now present: " + registeredSources);
+//        WebSourceDef def = mapper.map(event);
+        WebSourceDef def = hostMap.remove(event.getName());
+//        System.out.println("now present: " + registeredSources);
         System.out.println("to remove: " + def);
 
         Optional.of(def)
-                .filter(registeredSources::remove)
+//                .filter(registeredSources::remove)
                 .map(funky(chew(WebSourceDef::getName, logFun("JmDns service instance removed: {}"))))
                 .ifPresent(removeObserver);
     }
 
     @Override
     public void serviceResolved(ServiceEvent event) {
-        if (event.getName().equals(name)) {
-            log.warn("skipping serviceResolve of self by name: '{}'", event.getName());
-            return;
-        }
+//        if (event.getName().equals(name)) {
+//            log.warn("skipping serviceResolve of self by name: '{}'", event.getName());
+//            return;
+//        }
 
         Optional.of(event)
                 .map(mapper::map)
-                .filter(registeredSources::add)
+//                .filter(registeredSources::add)
+                .map(funky(q -> hostMap.put(q.getName(), q)))
                 .map(funky(chew(WebSourceDef::getName, logFun("JmDns service instance resolved: {}"))))
                 .ifPresent(addObserver);
     }
