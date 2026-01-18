@@ -10,6 +10,7 @@ import javax.jmdns.ServiceEvent;
 import javax.jmdns.ServiceListener;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import static org.zapphyre.function.FunHelper.*;
 
@@ -45,6 +46,8 @@ public class JmDnsEventListener implements ServiceListener {
 
         Optional.of(def)
 //                .filter(registeredSources::remove)
+                .filter(Predicate.not(q -> q.getBaseUrl() != null))
+                .filter(q -> hostMap.put(q.getName(), q) != null) // was there
                 .map(funky(chew(WebSourceDef::getName, logFun("JmDns service instance removed: {}"))))
                 .ifPresent(removeObserver);
     }
@@ -59,8 +62,10 @@ public class JmDnsEventListener implements ServiceListener {
         Optional.of(event)
                 .map(mapper::map)
 //                .filter(registeredSources::add)
-                .map(funky(q -> hostMap.put(q.getName(), q)))
+                .filter(Predicate.not(q -> q.getBaseUrl() != null))
+                .filter(q -> hostMap.put(q.getName(), q) == null) //null was there previously (it wasn't there)
                 .map(funky(chew(WebSourceDef::getName, logFun("JmDns service instance resolved: {}"))))
                 .ifPresent(addObserver);
     }
+
 }
