@@ -58,7 +58,7 @@ public class JmRegistry implements RegistryController {
     @Override
     public void delist(JmDnsProperties properties) {
         if (jmDNS != null) {
-            log.info("Delisting JmDNS group '{}'.", mapGroup(serviceGroupName));
+            log.info("Delisting JmDNS host '{}' from group: '{}'.", properties.getInstanceName(), serviceGroupName);
             jmDNS.unregisterService(map(properties, serviceGroupName));
         }
     }
@@ -66,7 +66,7 @@ public class JmRegistry implements RegistryController {
     @Override
     public void register(JmDnsProperties properties) throws IOException {
         if (jmDNS != null) {
-            log.info("Registering JmDNS group '{}'.", mapGroup(serviceGroupName));
+            log.info("Registering JmDNS host: '{}' into group: '{}'.", properties.getInstanceName(), serviceGroupName);
             jmDNS.registerService(map(properties, serviceGroupName));
         }
     }

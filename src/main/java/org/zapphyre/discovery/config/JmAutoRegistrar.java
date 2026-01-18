@@ -7,11 +7,12 @@ import org.springframework.context.annotation.Configuration;
 import org.zapphyre.discovery.JmdnsDiscovery;
 import org.zapphyre.discovery.exception.NoLocalIpException;
 import org.zapphyre.discovery.intf.JmAutoRegistry;
+import org.zapphyre.discovery.intf.JmDnsPropertiesProvider;
+import org.zapphyre.discovery.model.JmDnsProperties;
 import org.zapphyre.discovery.porperty.JmDnsHostProperties;
 
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -25,8 +26,11 @@ public class JmAutoRegistrar {
 
     private final List<JmAutoRegistry> candidates;
     private final JmDnsHostProperties host;
+    private final JmDnsHostManager jmDnsHostManager;
 
+    // add map of group name to JmdnsDiscovery and methods to register/delist
     private String toLogPrev = "";
+
 
     @PostConstruct
     public void registerEm() {
@@ -41,6 +45,7 @@ public class JmAutoRegistrar {
                 discovery.register(candidate.getJmDnsProperties());
                 toLog = "Registered JM registry %s".formatted(candidate.getJmDnsProperties().getInstanceName());
                 iCandid.remove();
+                jmDnsHostManager.addRegisteredHost(candidate.getJmDnsProperties(), discovery);
             } catch (NoLocalIpException e) {
                 host.setMineIpAddress(getLocalActiveIp());
                 toLog = "No local ip address found";

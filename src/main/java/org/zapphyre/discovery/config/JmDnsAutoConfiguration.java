@@ -14,7 +14,7 @@ import java.net.InetAddress;
 @Slf4j
 @Configuration(proxyBeanMethods = false)
 @RequiredArgsConstructor
-@Import(JmAutoRegistrar.class)
+@Import({JmAutoRegistrar.class, JmDnsHostManager.class})
 public class JmDnsAutoConfiguration {
 
     @Value("${jmDns.mineIpAddress:}")
