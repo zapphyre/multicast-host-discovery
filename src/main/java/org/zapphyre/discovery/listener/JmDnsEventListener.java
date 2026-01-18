@@ -38,10 +38,11 @@ public class JmDnsEventListener implements ServiceListener {
     public void serviceRemoved(ServiceEvent event) {
         log.info("JmDns service instance remove request: " + event.getName());
 
+        WebSourceDef def = mapper.map(event);
         System.out.println("now present: " + registeredSources);
+        System.out.println("to remove: " + def);
 
-        Optional.of(event)
-                .map(mapper::map)
+        Optional.of(def)
                 .filter(registeredSources::remove)
                 .map(funky(chew(WebSourceDef::getName, logFun("JmDns service instance removed: {}"))))
                 .ifPresent(removeObserver);

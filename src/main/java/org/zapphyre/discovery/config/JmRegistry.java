@@ -11,11 +11,15 @@ import org.zapphyre.discovery.model.JmDnsProperties;
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceInfo;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @RequiredArgsConstructor
 public class JmRegistry implements RegistryController {
 
+    public static final String ADDRESS_JMDNS_PROP = "baseUrl";
+    public static final String GREETING_JMDNS_PROP = "greeting";
     private final EventSourceMapper mapper;
     private final JmDNS jmDNS;
 
@@ -43,11 +47,18 @@ public class JmRegistry implements RegistryController {
     }
 
     private ServiceInfo map(JmDnsProperties properties, String groupName) {
+        Map<String, String> props = new HashMap<>();
+        props.put(ADDRESS_JMDNS_PROP, properties.getBaseUrl());
+        props.put(GREETING_JMDNS_PROP, properties.getGreetingMessage());
+        // Add any other custom key/value pairs you want in TXT here
+
         return ServiceInfo.create(
                 mapGroup(groupName),
                 properties.getInstanceName(),
                 properties.getPort(),
-                properties.getGreetingMessage()
+                0,          // weight
+                0,          // priority
+                props       // TXT properties
         );
     }
 

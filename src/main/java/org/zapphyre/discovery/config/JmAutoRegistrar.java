@@ -43,6 +43,7 @@ public class JmAutoRegistrar {
             jmDnsHostManager.addRegisteredHost(candidate.getJmDnsProperties(), discovery);
 
             if (!candidate.getJmDnsProperties().isAutoRegister()) {
+                log.info("skipping registration of host: {}", candidate.getJmDnsProperties().getInstanceName());
                 iCandid.remove();
                 return;
             }
