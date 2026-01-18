@@ -11,9 +11,9 @@ import lombok.extern.jackson.Jacksonized;
 @EqualsAndHashCode
 public class WebSourceDef {
 
-    @EqualsAndHashCode.Exclude
     String baseUrl;
-
     int port;
+
+    @EqualsAndHashCode.Exclude
     String name;
 }

@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.zapphyre.discovery.JmdnsDiscovery;
 import org.zapphyre.discovery.model.JmDnsProperties;
-import org.zapphyre.discovery.porperty.JmDnsHostProperties;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -22,12 +21,6 @@ public class JmDnsHostManager {
     }
 
     public void registerProvider(JmDnsProperties properties) throws IOException {
-        JmdnsDiscovery jmdnsDiscovery = registeredHostsMap.get(properties);
-        if (jmdnsDiscovery == null) {
-            log.warn("no jmDns group registered for such candidate: {}", properties.getInstanceName());
-            return;
-        }
-
         Optional.ofNullable(getDiscovery(properties))
                 .ifPresent(q -> {
                     try {

@@ -38,14 +38,20 @@ public class JmAutoRegistrar {
 
         while (iCandid.hasNext()) {
             JmAutoRegistry candidate = iCandid.next();
+
             JmdnsDiscovery discovery = new JmdnsDiscovery(host, candidate);
+            jmDnsHostManager.addRegisteredHost(candidate.getJmDnsProperties(), discovery);
+
+            if (!candidate.getJmDnsProperties().isAutoRegister()) {
+                iCandid.remove();
+                return;
+            }
 
             String toLog = "";
             try {
                 discovery.register(candidate.getJmDnsProperties());
                 toLog = "Registered JM registry %s".formatted(candidate.getJmDnsProperties().getInstanceName());
                 iCandid.remove();
-                jmDnsHostManager.addRegisteredHost(candidate.getJmDnsProperties(), discovery);
             } catch (NoLocalIpException e) {
                 host.setMineIpAddress(getLocalActiveIp());
                 toLog = "No local ip address found";

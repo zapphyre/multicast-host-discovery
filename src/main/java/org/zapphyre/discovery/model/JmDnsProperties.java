@@ -14,6 +14,11 @@ import lombok.extern.jackson.Jacksonized;
 public class JmDnsProperties {
     String baseUrl;
     String instanceName;
-    String greetingMessage;
     int port;
+
+    @EqualsAndHashCode.Exclude
+    String greetingMessage;
+
+    @EqualsAndHashCode.Exclude
+    boolean autoRegister;
 }
