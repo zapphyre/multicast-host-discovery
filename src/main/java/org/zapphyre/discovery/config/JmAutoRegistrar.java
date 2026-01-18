@@ -45,7 +45,7 @@ public class JmAutoRegistrar {
             if (!candidate.getJmDnsProperties().isAutoRegister()) {
                 log.info("skipping registration of host: {}", candidate.getJmDnsProperties().getInstanceName());
                 iCandid.remove();
-                return;
+                continue;
             }
 
             String toLog = "";
