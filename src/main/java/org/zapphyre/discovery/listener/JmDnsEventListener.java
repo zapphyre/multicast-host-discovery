@@ -24,8 +24,6 @@ public class JmDnsEventListener implements ServiceListener {
     private final Consumer<WebSourceDef> addObserver;
     private final Consumer<WebSourceDef> removeObserver;
 
-//    private final Set<WebSourceDef> registeredSources = new HashSet<>();
-
     private final Map<String, WebSourceDef> hostMap = new HashMap<>();
 
     @Override
@@ -37,36 +35,19 @@ public class JmDnsEventListener implements ServiceListener {
 
     @Override
     public void serviceRemoved(ServiceEvent event) {
-        log.info("JmDns service instance remove request: " + event.getName());
-
-//        WebSourceDef def = mapper.map(event);
-        WebSourceDef def = hostMap.remove(event.getName());
-//        System.out.println("now present: " + registeredSources);
-        System.out.println("to remove: " + def);
-
-        Optional.of(def)
-//                .filter(registeredSources::remove)
-                .filter(q -> hostMap.remove(q.getName()) != null) // was there
+        Optional.of(event)
+                .map(mapper::map)
+                .filter(q -> hostMap.remove(q.getName()) != null)
                 .map(funky(chew(WebSourceDef::getName, logFun("JmDns service instance removed: {}"))))
                 .ifPresent(removeObserver);
     }
 
     @Override
     public void serviceResolved(ServiceEvent event) {
-//        if (event.getName().equals(name)) {
-//            log.warn("skipping serviceResolve of self by name: '{}'", event.getName());
-//            return;
-//        }
-
-        WebSourceDef def = mapper.map(event);
-
-        log.info("mapped resolved source as: {}", def);
-
-        Optional.of(def)
-//                .map(mapper::map)
-//                .filter(registeredSources::add)
+        Optional.of(event)
+                .map(mapper::map)
                 .filter(Predicate.not(q -> q.getBaseUrl() == null))
-                .filter(q -> hostMap.put(q.getName(), q) == null) //null was there previously (it wasn't there)
+                .filter(q -> hostMap.put(q.getName(), q) == null)
                 .map(funky(chew(WebSourceDef::getName, logFun("JmDns service instance resolved: {}"))))
                 .ifPresent(addObserver);
     }
