@@ -46,7 +46,6 @@ public class JmDnsEventListener implements ServiceListener {
 
         Optional.of(def)
 //                .filter(registeredSources::remove)
-                .filter(Predicate.not(q -> q.getBaseUrl() != null))
                 .filter(q -> hostMap.put(q.getName(), q) != null) // was there
                 .map(funky(chew(WebSourceDef::getName, logFun("JmDns service instance removed: {}"))))
                 .ifPresent(removeObserver);
