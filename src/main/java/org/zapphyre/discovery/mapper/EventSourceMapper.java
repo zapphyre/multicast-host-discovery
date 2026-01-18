@@ -11,6 +11,8 @@ import javax.jmdns.ServiceInfo;
 
 import java.util.Optional;
 
+import static org.zapphyre.discovery.config.JmRegistry.ADDRESS_JMDNS_PROP;
+
 @Mapper(componentModel = "spring")
 public interface EventSourceMapper {
 
@@ -24,33 +26,11 @@ public interface EventSourceMapper {
         ServiceInfo info = event.getInfo();
 
         // Safety: no info or no data → fallback placeholder
-        if (info == null || !info.hasData()) {
+        if (info == null) {
             return null;
         }
+        String explicitBaseUrl = info.getPropertyString(ADDRESS_JMDNS_PROP);
 
-        // Primary: explicit baseUrl from TXT record (your custom property)
-        String explicitBaseUrl = info.getPropertyString("baseUrl");
-        if (explicitBaseUrl != null && !explicitBaseUrl.isBlank()) {
-            return explicitBaseUrl.trim();
-        }
-
-        // Fallback 1: resolved host addresses (prefer first, strip [] for IPv6)
-        String[] hostAddresses = info.getHostAddresses();
-        if (hostAddresses.length > 0) {
-            String addr = hostAddresses[0];
-            return addr.replace("[", "").replace("]", "").trim();
-        }
-
-        // Fallback 2: very rare – try to get local interface address (self-discovery case)
-        if (event.getSource() instanceof javax.jmdns.impl.JmDNSImpl dns) {
-            try {
-                return Optional.ofNullable(dns.getInetAddress())
-                        .map(a -> a.getHostAddress().replace("[", "").replace("]", ""))
-                        .orElse(null);
-            } catch (Exception ignored) {
-            }
-        }
-
-        return null;
+        return explicitBaseUrl;
     }
 }
