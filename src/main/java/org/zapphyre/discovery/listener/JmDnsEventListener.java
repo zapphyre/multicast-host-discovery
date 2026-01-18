@@ -62,7 +62,7 @@ public class JmDnsEventListener implements ServiceListener {
         Optional.of(event)
                 .map(mapper::map)
 //                .filter(registeredSources::add)
-                .filter(Predicate.not(q -> q.getBaseUrl() != null))
+                .filter(Predicate.not(q -> q.getBaseUrl() == null))
                 .filter(q -> hostMap.put(q.getName(), q) == null) //null was there previously (it wasn't there)
                 .map(funky(chew(WebSourceDef::getName, logFun("JmDns service instance resolved: {}"))))
                 .ifPresent(addObserver);
