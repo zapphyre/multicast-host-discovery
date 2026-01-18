@@ -1,81 +1,81 @@
 package org.zapphyre.discovery.config;
 
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
-import org.zapphyre.discovery.exception.NoLocalIpException;
 import org.zapphyre.discovery.intf.JmDnsInstanceManager;
 import org.zapphyre.discovery.intf.RegistryController;
 import org.zapphyre.discovery.listener.JmDnsEventListener;
 import org.zapphyre.discovery.mapper.EventSourceMapper;
 import org.zapphyre.discovery.model.JmDnsProperties;
-import org.zapphyre.discovery.porperty.JmDnsHostProperties;
 
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceInfo;
 import java.io.IOException;
 
 @Slf4j
-@Component
 @RequiredArgsConstructor
 public class JmRegistry implements RegistryController {
 
     private final EventSourceMapper mapper;
-    private final JmDnsHostProperties hostProperties;
-    private JmDNS jmDNS;
+    private final JmDNS jmDNS;
 
-    @PostConstruct
-    void init() throws IOException {
-        jmDNS = JmDNS.create(hostProperties.getMineIpAddress());
+    private String serviceGroupName;
+
+    public RegistryController initialize(JmDnsInstanceManager im) throws IOException {
+            JmDnsEventListener listener = new JmDnsEventListener(
+                    jmDNS,
+                    mapper,
+                    serviceGroupName = im.serviceGroupName(),
+                    im::sourceDiscovered,
+                    im::sourceLost
+            );
+
+            String group = mapGroup(im.serviceGroupName());
+            log.info("Registering JmDNS group '{}'", group);
+
+            try {
+                jmDNS.addServiceListener(group, listener);
+            } catch (Exception e) {
+                log.error("Failed to register JmDNS service", e);
+            }
+
+        return this;
     }
 
-    public void register(JmDnsInstanceManager instanceManager) throws IOException {
-        if (hostProperties.getMineIpAddress() == null) throw new NoLocalIpException("MineIpAddress is null");
-
-        jmDNS = JmDNS.create(hostProperties.getMineIpAddress());
-        JmDnsProperties jmDnsProperties = instanceManager.getJmDnsProperties();
-
-        JmDnsEventListener jmDnsEventListener = new JmDnsEventListener(jmDNS,
-                mapper,
-                jmDnsProperties.getInstanceName(),
-                instanceManager::sourceDiscovered, instanceManager::sourceLost
-        );
-
-        ServiceInfo info = map(jmDnsProperties);
-        log.info("Registering JmDNS group '{}'. for Ip: {}", info.getType(), hostProperties.getMineIpAddress());
-
-        try {
-            jmDNS.addServiceListener(info.getType(), jmDnsEventListener);
-            jmDNS.registerService(info);
-        } catch (Exception e) {
-            log.error("Failed to register JmDNS service", e);
-        }
-
-    }
-
-    ServiceInfo map(JmDnsProperties properties) {
+    private ServiceInfo map(JmDnsProperties properties, String groupName) {
         return ServiceInfo.create(
-                mapGroup(properties.getGroup()),
+                mapGroup(groupName),
                 properties.getInstanceName(),
                 properties.getPort(),
                 properties.getGreetingMessage()
         );
     }
 
-    String mapGroup(String group) {
+    private String mapGroup(String group) {
         return "_%s._tcp.local.".formatted(group);
     }
 
     @Override
     public void delist(JmDnsProperties properties) {
-        log.info("Delisting JmDNS group '{}'.", mapGroup(properties.getGroup()));
-        jmDNS.unregisterService(map(properties));
+        if (jmDNS != null) {
+            log.info("Delisting JmDNS group '{}'.", mapGroup(serviceGroupName));
+            jmDNS.unregisterService(map(properties, serviceGroupName));
+        }
     }
 
     @Override
     public void register(JmDnsProperties properties) throws IOException {
-        log.info("Registering JmDNS group '{}'.", mapGroup(properties.getGroup()));
-        jmDNS.registerService(map(properties));
+        if (jmDNS != null) {
+            log.info("Registering JmDNS group '{}'.", mapGroup(serviceGroupName));
+            jmDNS.registerService(map(properties, serviceGroupName));
+        }
+    }
+
+    public void close() {
+        try {
+            jmDNS.close();
+        } catch (IOException e) {
+            log.warn("Error closing JmDNS", e);
+        }
     }
 }

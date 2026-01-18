@@ -4,6 +4,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
+import org.zapphyre.discovery.JmdnsDiscovery;
 import org.zapphyre.discovery.exception.NoLocalIpException;
 import org.zapphyre.discovery.intf.JmAutoRegistry;
 import org.zapphyre.discovery.porperty.JmDnsHostProperties;
@@ -14,7 +15,8 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import static org.zapphyre.discovery.config.JmDnsAutoConfiguration.getLocalActiveIp;
+import static org.zapphyre.discovery.util.JmDnsUtils.getLocalActiveIp;
+
 
 @Slf4j
 @Configuration
@@ -22,7 +24,6 @@ import static org.zapphyre.discovery.config.JmDnsAutoConfiguration.getLocalActiv
 public class JmAutoRegistrar {
 
     private final List<JmAutoRegistry> candidates;
-    private final JmRegistry jmRegistry;
     private final JmDnsHostProperties host;
 
     private String toLogPrev = "";
@@ -33,16 +34,18 @@ public class JmAutoRegistrar {
 
         while (iCandid.hasNext()) {
             JmAutoRegistry candidate = iCandid.next();
+            JmdnsDiscovery discovery = new JmdnsDiscovery(host, candidate);
+
             String toLog = "";
             try {
-                jmRegistry.register(candidate);
+                discovery.register(candidate.getJmDnsProperties());
                 toLog = "Registered JM registry %s".formatted(candidate.getJmDnsProperties().getInstanceName());
                 iCandid.remove();
             } catch (NoLocalIpException e) {
                 host.setMineIpAddress(getLocalActiveIp());
                 toLog = "No local ip address found";
             } catch (IOException e) {
-                toLog = "Failed to register JM registry %s".formatted(candidate.getJmDnsProperties().getInstanceName());
+                toLog = "Failed to register JM registry %s; error: %s".formatted(candidate.getJmDnsProperties().getInstanceName(), e.getMessage());
             }
 
             if (!toLogPrev.equals(toLog))

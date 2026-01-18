@@ -15,6 +15,5 @@ public class JmDnsProperties {
     String baseUrl;
     String instanceName;
     String greetingMessage;
-    String group;
     int port;
 }
