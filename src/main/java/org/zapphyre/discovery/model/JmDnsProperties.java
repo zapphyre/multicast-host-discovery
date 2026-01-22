@@ -1,10 +1,9 @@
 package org.zapphyre.discovery.model;
 
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Value;
-import lombok.With;
+import lombok.*;
 import lombok.extern.jackson.Jacksonized;
+
+import java.util.Map;
 
 @With
 @Value
@@ -15,6 +14,9 @@ public class JmDnsProperties {
     String baseUrl;
     String instanceName;
     int port;
+
+    @Singular("additional")
+    Map<String, String> additionals;
 
     @EqualsAndHashCode.Exclude
     String greetingMessage;

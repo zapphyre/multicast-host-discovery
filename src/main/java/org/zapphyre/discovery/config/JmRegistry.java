@@ -26,28 +26,30 @@ public class JmRegistry implements RegistryController {
     private String serviceGroupName;
 
     public RegistryController initialize(JmDnsInstanceManager im) throws IOException {
-            JmDnsEventListener listener = new JmDnsEventListener(
-                    jmDNS,
-                    mapper,
-                    serviceGroupName = im.serviceGroupName(),
-                    im::sourceDiscovered,
-                    im::sourceLost
-            );
+        serviceGroupName = im.serviceGroupName();
 
-            String group = mapGroup(im.serviceGroupName());
-            log.info("Registering JmDNS group '{}'", group);
+        JmDnsEventListener listener = new JmDnsEventListener(
+                jmDNS,
+                mapper,
+                im.serviceRegistryInitiatorName(),
+                im::sourceDiscovered,
+                im::sourceLost
+        );
 
-            try {
-                jmDNS.addServiceListener(group, listener);
-            } catch (Exception e) {
-                log.error("Failed to register JmDNS service", e);
-            }
+        String group = mapGroup(im.serviceGroupName());
+        log.info("Registering JmDNS group '{}'", group);
+
+        try {
+            jmDNS.addServiceListener(group, listener);
+        } catch (Exception e) {
+            log.error("Failed to register JmDNS service", e);
+        }
 
         return this;
     }
 
     private ServiceInfo map(JmDnsProperties properties, String groupName) {
-        Map<String, String> props = new HashMap<>();
+        Map<String, String> props = new HashMap<>(properties.getAdditionals());
         props.put(ADDRESS_JMDNS_PROP, properties.getBaseUrl());
         props.put(GREETING_JMDNS_PROP, properties.getGreetingMessage());
         // Add any other custom key/value pairs you want in TXT here
@@ -69,7 +71,7 @@ public class JmRegistry implements RegistryController {
     @Override
     public void delist(JmDnsProperties properties) {
         if (jmDNS != null) {
-            log.info("Delisting JmDNS host '{}' from group: '{}'.", properties.getInstanceName(), serviceGroupName);
+            log.info("Delisting JmDNS host '{}' from group: '{}'.", properties.getInstanceName(), properties);
             jmDNS.unregisterService(map(properties, serviceGroupName));
         }
     }

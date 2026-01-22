@@ -20,7 +20,7 @@ public class JmDnsEventListener implements ServiceListener {
 
     private final JmDNS jmdns;
     private final EventSourceMapper mapper;
-    private final String name;
+    private final String initiatorName;
     private final Consumer<WebSourceDef> addObserver;
     private final Consumer<WebSourceDef> removeObserver;
 
@@ -28,6 +28,8 @@ public class JmDnsEventListener implements ServiceListener {
 
     @Override
     public void serviceAdded(ServiceEvent event) {
+        if (event.getName().equals(initiatorName)) return;
+
         log.info("JmDns service instance appeared: " + event.getName());
 
         jmdns.requestServiceInfo(event.getType(), event.getName());
@@ -44,6 +46,8 @@ public class JmDnsEventListener implements ServiceListener {
 
     @Override
     public void serviceResolved(ServiceEvent event) {
+        if (event.getName().equals(initiatorName)) return;
+
         Optional.of(event)
                 .map(mapper::map)
                 .filter(Predicate.not(q -> q.getBaseUrl() == null))

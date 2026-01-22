@@ -5,6 +5,8 @@ import lombok.EqualsAndHashCode;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
+import java.util.Map;
+
 @Value
 @Builder
 @Jacksonized
@@ -16,4 +18,6 @@ public class WebSourceDef {
 
     @EqualsAndHashCode.Exclude
     String name;
+
+    Map<String, String> additionals;
 }

@@ -9,4 +9,6 @@ public interface JmDnsInstanceManager {
     void sourceLost(WebSourceDef def);
 
     String serviceGroupName();
+
+    String serviceRegistryInitiatorName();
 }
